@@ -5,16 +5,22 @@ import jam.Yaml
 
 class YamlParser {
 
-  val strings = P(AnyChar.rep)
+  val digits = P(CharIn("+-").? ~ CharPred(_.isDigit).rep)
 
-  val digits = P(CharPred(_.isDigit).rep)
+  val decimals = P(digits ~ "." ~ digits ~ (CharIn("eE") ~ digits).?)
+
+  val strings = P(AnyChar.rep).!.map(x => Yaml.YString(x))
 
   val ints = digits.!.map(x => Yaml.YInt(x.toInt))
 
   val longs = digits.!.map(x => Yaml.YLong(x.toLong))
 
-  val floats = P("." ~ digits).!.map(x => Yaml.YFloat(x.toFloat))
+  val floats = decimals.!.map(x => Yaml.YFloat(x.toFloat))
 
-  val doubles = P("." ~ digits).!.map(x => Yaml.YDouble(x.toDouble))
+  val doubles = decimals.!.map(x => Yaml.YDouble(x.toDouble))
+
+  val True = P("True" | "true").!.map(_ => Yaml.YTrue)
+
+  val False = P("False" | "false").!.map(_ => Yaml.YFalse)
 
 }
