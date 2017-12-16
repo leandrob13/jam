@@ -45,24 +45,49 @@ class YamlParser {
 
   val nested = P("\n" ~ " ".rep.!).log()
 
-  val array = P((Start | ("\n" ~ " ".rep)) ~ "-" ~ " ".rep ~/ expr.rep(sep = ("\n" ~ " ".rep ~ "-" ~ " ".rep).~/))
+  val nArray = P(nested.flatMap(s => (("-" ~ " ") ~/ expr).rep(sep = ("\n" + s).~/)))
     .map(x => YArray(x.toVector))
     .log()
 
-  val nArray = P(nested.flatMap(s => (("-" ~ " ".rep) ~/ expr).rep(sep = ("\n" + s).~/)))
-    .map(x => YArray(x.toVector))
-    .log()
+  val arrayKeys = P(keys ~ space ~ nested ~ &("- ")).log()
 
-  val nObj = P(nested.flatMap(s => !("-" ~ " ".rep) ~/ keyValue.rep(sep = ("\n" + s).~/)))
+  val array = P {
+    val x = for {
+      ak <- arrayKeys
+      (k, s) = ak
+      e <- ("- " ~/ expr).rep(sep = ("\n" + s).~/)
+    } yield YMap(ListMap(k -> YArray(e.toVector)))
+    x //.rep(sep = "\n").map(x => x)
+  }
+
+  val objectRec: all.Parser[(String, Yaml)] = P {
+    for {
+      a <- keys ~ space ~ nested.?
+      (s, o) = a
+      b <- o match {
+        case None =>
+          println(s"xxxxxxxx NO new line $s")
+          primitives
+        case Some(n) =>
+          println(s"xxxxxxxx New line $s")
+          rootKeys(n) //.rep(sep = ("\n" + n).~/)
+      }
+    } yield (s, b)
+  }
+
+  def rootKeys(s: String = "") = P(objectRec.rep(sep = ("\n" + s).~/)).map(x => YMap(ListMap(x: _*))).log()
+
+  val nObj = P(((nested | PassWith("")) ~ !("-" ~ " ".rep)).flatMap(s => keyValue.rep(sep = ("\n" + s).~/)))
     .map(x => YMap(ListMap(x: _*)))
     .log()
 
-  val obj = P(keyValue).map(x => YMap(ListMap(x))).log()
-
   val end = P(CharsWhileIn(" \r\n").rep.? ~ End)
+
+  val primitives = P(True | ints | strings).log()
+
+  val ex = P((objectRec | primitives) ~ end.?)
 
   val expr: all.Parser[Yaml] =
     P((nObj | nArray | True | ints | strings) ~ end.?).log()
-  //P(" ".? ~ (array | obj | True | False | ints | strings)).log()
 
 }

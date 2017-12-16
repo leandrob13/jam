@@ -1,9 +1,10 @@
 package jam.parser
 
 import fastparse.core.Parsed
-import jam.Yaml
+import jam.Yaml._
 import org.scalatest.{ Inside, MustMatchers, WordSpec }
 
+import scala.collection.immutable.ListMap
 import scala.io.Source
 
 class YamlParserTest extends WordSpec with MustMatchers with Inside with Generators {
@@ -17,7 +18,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
       forAll(stringGen) { s: String =>
         inside(parser.strings.parse(s)) {
           case Parsed.Success(v, _) =>
-            v mustBe Yaml.YString(s)
+            v mustBe YString(s)
         }
       }
 
@@ -27,7 +28,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
       forAll(positiveIntGen) { s: Int =>
         inside(parser.ints.parse(s.toString)) {
           case Parsed.Success(v, _) =>
-            v mustBe Yaml.YInt(s)
+            v mustBe YInt(s)
         }
       }
     }
@@ -36,7 +37,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
       forAll(negativeIntGen) { s: Int =>
         inside(parser.ints.parse(s.toString)) {
           case Parsed.Success(v, _) =>
-            v mustBe Yaml.YInt(s)
+            v mustBe YInt(s)
         }
       }
     }
@@ -45,7 +46,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
       forAll(positiveLongGen) { s: Long =>
         inside(parser.longs.parse(s.toString)) {
           case Parsed.Success(v, _) =>
-            v mustBe Yaml.YLong(s)
+            v mustBe YLong(s)
         }
       }
     }
@@ -54,7 +55,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
       forAll(negativeLongGen) { s: Long =>
         inside(parser.longs.parse(s.toString)) {
           case Parsed.Success(v, _) =>
-            v mustBe Yaml.YLong(s)
+            v mustBe YLong(s)
         }
       }
     }
@@ -63,7 +64,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
       forAll(positiveFloatGen) { s: Float =>
         inside(parser.floats.parse(s.toString)) {
           case Parsed.Success(v, _) =>
-            v mustBe Yaml.YFloat(s)
+            v mustBe YFloat(s)
         }
       }
     }
@@ -72,7 +73,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
       forAll(negativeFloatGen) { s: Float =>
         inside(parser.floats.parse(s.toString)) {
           case Parsed.Success(v, _) =>
-            v mustBe Yaml.YFloat(s)
+            v mustBe YFloat(s)
         }
       }
     }
@@ -81,7 +82,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
       forAll(positiveDoubleGen) { s: Double =>
         inside(parser.doubles.parse(s.toString)) {
           case Parsed.Success(v, _) =>
-            v mustBe Yaml.YDouble(s)
+            v mustBe YDouble(s)
         }
       }
     }
@@ -90,7 +91,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
       forAll(negativeDoubleGen) { s: Double =>
         inside(parser.doubles.parse(s.toString)) {
           case Parsed.Success(v, _) =>
-            v mustBe Yaml.YDouble(s)
+            v mustBe YDouble(s)
         }
       }
     }
@@ -98,32 +99,73 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
     "parse a true" in {
       inside(parser.True.parse("true")) {
         case Parsed.Success(v, _) =>
-          v mustBe Yaml.YTrue
+          v mustBe YTrue
       }
 
       inside(parser.True.parse("True")) {
         case Parsed.Success(v, _) =>
-          v mustBe Yaml.YTrue
+          v mustBe YTrue
       }
     }
 
     "parse a false" in {
       inside(parser.False.parse("false")) {
         case Parsed.Success(v, _) =>
-          v mustBe Yaml.YFalse
+          v mustBe YFalse
       }
 
       inside(parser.False.parse("False")) {
         case Parsed.Success(v, _) =>
-          v mustBe Yaml.YFalse
+          v mustBe YFalse
       }
     }
 
-    "parse an object" in {
+    "parse a simple object" in {
       val value = getYaml("/simple.yaml")
+
+      inside(parser.expr.parse(value)) {
+        case Parsed.Success(v, _) =>
+          v mustBe YMap(
+            ListMap(
+              "name"    -> YString("Ralph"),
+              "age"     -> YInt(33),
+              "married" -> YTrue
+            )
+          )
+      }
+    }
+
+    "parse a nested object" in {
+      val value = getYaml("/nestedObject.yaml")
+
+      inside(parser.rootKeys().parse(value)) {
+        case Parsed.Success(v, _) =>
+          v mustBe YMap(
+            ListMap(
+              "info" -> YMap(
+                ListMap(
+                  "address"   -> YString("none"),
+                  "telephone" -> YString("12345"),
+                  "info" -> YMap(
+                    ListMap(
+                      "address"   -> YString("none"),
+                      "telephone" -> YString("12345")
+                    )
+                  )
+                )
+              ),
+              "test" -> YInt(0)
+            )
+          )
+      }
+    }
+
+    /*"parse a nested array object" in {
+      val value = getYaml("/nestedArrays.yaml")
       //val v = """name: "Ralph"""
 
-      println(s"==========OBJ1 ${parser.expr.parse(value)}")
+      println(s"==========OBJ1 ${parser.array.parse(value)}")
+      println(s"==========OBJ2 ${parser.xObj.parse(value)}")
       //println(s"==========OBJ2 ${parser.expr.parse(value)}")
       /*inside(parser.obj.parse(value)) {
         case Parsed.Success(v, 35) =>
@@ -135,7 +177,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
             )
           )
       }*/
-    }
+    }*/
   }
 
   def getYaml(path: String) =
