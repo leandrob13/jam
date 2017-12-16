@@ -160,12 +160,11 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
       }
     }
 
-    /*"parse a nested array object" in {
+    "parse a nested array object" in {
       val value = getYaml("/nestedArrays.yaml")
       //val v = """name: "Ralph"""
 
-      println(s"==========OBJ1 ${parser.array.parse(value)}")
-      println(s"==========OBJ2 ${parser.xObj.parse(value)}")
+      println(s"==========OBJ1 ${parser.rootKeys().parse(value)}")
       //println(s"==========OBJ2 ${parser.expr.parse(value)}")
       /*inside(parser.obj.parse(value)) {
         case Parsed.Success(v, 35) =>
@@ -177,7 +176,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
             )
           )
       }*/
-    }*/
+    }
   }
 
   def getYaml(path: String) =

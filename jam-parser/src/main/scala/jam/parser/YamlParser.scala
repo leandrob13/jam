@@ -1,8 +1,8 @@
 package jam.parser
 
-import fastparse.all
+import fastparse.{all, core}
 import jam.Yaml
-import jam.Yaml.{ YArray, YMap }
+import jam.Yaml.{YArray, YMap}
 
 import scala.collection.immutable.ListMap
 
@@ -49,18 +49,18 @@ class YamlParser {
     .map(x => YArray(x.toVector))
     .log()
 
-  val arrayKeys = P(keys ~ space ~ nested ~ &("- ")).log()
+  val arrayKeys2 = P(keys ~ space ~ nested ~ &("- ")).log()
 
   val array = P {
     val x = for {
-      ak <- arrayKeys
+      ak <- arrayKeys2
       (k, s) = ak
       e <- ("- " ~/ expr).rep(sep = ("\n" + s).~/)
     } yield YMap(ListMap(k -> YArray(e.toVector)))
     x //.rep(sep = "\n").map(x => x)
   }
 
-  val objectRec: all.Parser[(String, Yaml)] = P {
+  def objectRec(x: String = ""): all.Parser[(String, Yaml)] = P {
     for {
       a <- keys ~ space ~ nested.?
       (s, o) = a
@@ -70,12 +70,29 @@ class YamlParser {
           primitives
         case Some(n) =>
           println(s"xxxxxxxx New line $s")
-          rootKeys(n) //.rep(sep = ("\n" + n).~/)
+          rootKeys(n + x)
       }
     } yield (s, b)
   }
 
-  def rootKeys(s: String = "") = P(objectRec.rep(sep = ("\n" + s).~/)).map(x => YMap(ListMap(x: _*))).log()
+  def rootKeys(s: String = ""): core.Parser[YMap, Char, String] =
+    P(arrayKeys(s).rep(sep = ("\n" + s).~/)).map(x => YMap(ListMap(x: _*))).log()
+
+  def arrayKeys(s: String = "") = P {
+    for {
+      a <- &("- ").!.?
+      b <- a match {
+        case None =>
+          println(s"xxxxxxxx NO ARRAY")
+          objectRec()
+        case Some(_) =>
+          println(s"xxxxxxxx ARRAY $a")
+          objectRec()
+          //("- " ~/ rootKeys("  ")).rep(sep = ("\n" + s).~/).map(x => YArray(x.toVector))
+
+      }
+    } yield b
+  }
 
   val nObj = P(((nested | PassWith("")) ~ !("-" ~ " ".rep)).flatMap(s => keyValue.rep(sep = ("\n" + s).~/)))
     .map(x => YMap(ListMap(x: _*)))
@@ -84,8 +101,6 @@ class YamlParser {
   val end = P(CharsWhileIn(" \r\n").rep.? ~ End)
 
   val primitives = P(True | ints | strings).log()
-
-  val ex = P((objectRec | primitives) ~ end.?)
 
   val expr: all.Parser[Yaml] =
     P((nObj | nArray | True | ints | strings) ~ end.?).log()
