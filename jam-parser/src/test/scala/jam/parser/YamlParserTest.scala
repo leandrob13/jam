@@ -123,12 +123,12 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
     "parse a simple object" in {
       val value = getYaml("/simple.yaml")
 
-      inside(parser.expr.parse(value)) {
+      inside(parser.root().parse(value)) {
         case Parsed.Success(v, _) =>
           v mustBe YMap(
             ListMap(
               "name"    -> YString("Ralph"),
-              "age"     -> YInt(33),
+              "age"     -> YLong(33),
               "married" -> YTrue
             )
           )
@@ -154,7 +154,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
                   )
                 )
               ),
-              "test" -> YInt(0)
+              "test" -> YLong(0)
             )
           )
       }
@@ -169,15 +169,15 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
           v mustBe YMap(
             ListMap(
               "numbers" -> YArray(
-                Vector(YInt(1), YInt(2), YInt(3))
+                Vector(YLong(1), YLong(2), YLong(3))
               ),
               "details" -> YArray(
                 Vector(
                   YMap(
-                    ListMap("count" -> YInt(1))
+                    ListMap("count" -> YLong(1))
                   ),
                   YMap(
-                    ListMap("count" -> YInt(2))
+                    ListMap("count" -> YLong(2))
                   )
                 )
               )

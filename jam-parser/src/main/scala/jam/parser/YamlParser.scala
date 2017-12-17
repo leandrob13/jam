@@ -1,6 +1,6 @@
 package jam.parser
 
-import fastparse.{ all, core }
+import fastparse.all
 import jam.Yaml
 import jam.Yaml.{ YArray, YMap }
 
@@ -38,7 +38,6 @@ class YamlParser {
   val False = P("False" | "false").!.map(_ => Yaml.YFalse)
 
   val primitives = P(True | False | doubles | floats | longs | ints | strings).log()
-
 
   val space = P(CharsWhileIn(" \r").?)
 
@@ -91,7 +90,6 @@ class YamlParser {
         }
       } yield (s, b)
     }.log()
-
 
   val end = P(CharsWhileIn(" \r\n").rep.? ~ End)
 
