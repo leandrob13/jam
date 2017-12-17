@@ -138,7 +138,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
     "parse a nested object" in {
       val value = getYaml("/nestedObject.yaml")
 
-      inside(parser.rootKeys().parse(value)) {
+      inside(parser.root().parse(value)) {
         case Parsed.Success(v, _) =>
           v mustBe YMap(
             ListMap(
@@ -162,20 +162,28 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
 
     "parse a nested array object" in {
       val value = getYaml("/nestedArrays.yaml")
-      //val v = """name: "Ralph"""
 
-      println(s"==========OBJ1 ${parser.rootKeys().parse(value)}")
-      //println(s"==========OBJ2 ${parser.expr.parse(value)}")
-      /*inside(parser.obj.parse(value)) {
-        case Parsed.Success(v, 35) =>
+      println(s"==========OBJ1 ${parser.root().parse(value)}")
+      inside(parser.root().parse(value)) {
+        case Parsed.Success(v, _) =>
           v mustBe YMap(
             ListMap(
-              "name"    -> YString("Ralph"),
-              "age"     -> YInt(33),
-              "married" -> YTrue
+              "numbers" -> YArray(
+                Vector(YInt(1), YInt(2), YInt(3))
+              ),
+              "details" -> YArray(
+                Vector(
+                  YMap(
+                    ListMap("count" -> YInt(1))
+                  ),
+                  YMap(
+                    ListMap("count" -> YInt(2))
+                  )
+                )
+              )
             )
           )
-      }*/
+      }
     }
   }
 

@@ -1,8 +1,8 @@
 package jam.parser
 
-import fastparse.{all, core}
+import fastparse.{ all, core }
 import jam.Yaml
-import jam.Yaml.{YArray, YMap}
+import jam.Yaml.{ YArray, YMap }
 
 import scala.collection.immutable.ListMap
 
@@ -19,13 +19,9 @@ class YamlParser {
 
   val strChars = P(CharsWhile(stringChars))
 
-  val space = P(CharsWhileIn(" \r").?)
-
   val digits = P(CharIn("+-").? ~ CharsWhileIn("0123456789"))
 
   val decimals = P(digits ~ "." ~ digits ~ (CharIn("eE") ~ digits).?)
-
-  val keys = P((strChars | escape).rep.! ~/ ":").log()
 
   val strings = P("\"".? ~/ (strChars | escape).rep.! ~ "\"".?).map(x => Yaml.YString(x)).log()
 
@@ -41,68 +37,62 @@ class YamlParser {
 
   val False = P("False" | "false").!.map(_ => Yaml.YFalse)
 
-  val keyValue = P(keys ~ space ~/ expr).log()
+  val primitives = P(True | False | doubles | floats | longs | ints | strings).log()
+
+
+  val space = P(CharsWhileIn(" \r").?)
+
+  val keys = P((strChars | escape).rep.! ~/ ":").log()
 
   val nested = P("\n" ~ " ".rep.!).log()
 
-  val nArray = P(nested.flatMap(s => (("-" ~ " ") ~/ expr).rep(sep = ("\n" + s).~/)))
-    .map(x => YArray(x.toVector))
-    .log()
+  def root(s: String = ""): all.Parser[Yaml] =
+    P {
+      for {
+        a <- &("- ").!.?
+        b <- a match {
+          case None =>
+            println(s"xxxxxxxx NO ARRAY")
+            objectRec().rep(sep = ("\n" + s).~/).map(x => YMap(ListMap(x: _*)))
+          case Some(_) =>
+            println(s"xxxxxxxx ARRAY ${s.length}")
+            ("- " ~/ collectionRec(s)).rep(sep = ("\n" + s).~/).map(x => YArray(x.toVector))
+        }
+      } yield b
+    }.log()
 
-  val arrayKeys2 = P(keys ~ space ~ nested ~ &("- ")).log()
+  def collectionRec(s: String = ""): all.Parser[Yaml] =
+    P {
+      for {
+        a <- &(keys).!.?
+        b <- a match {
+          case None =>
+            println(s"xxxxxxxx NO KEY")
+            primitives
+          case Some(k) =>
+            println(s"xxxxxxxx With KEY $k")
+            objectRec().rep(sep = (("\n" + s) ~ !"- ").~/).map(x => YMap(ListMap(x: _*)))
+        }
+      } yield b
+    }.log()
 
-  val array = P {
-    val x = for {
-      ak <- arrayKeys2
-      (k, s) = ak
-      e <- ("- " ~/ expr).rep(sep = ("\n" + s).~/)
-    } yield YMap(ListMap(k -> YArray(e.toVector)))
-    x //.rep(sep = "\n").map(x => x)
-  }
+  def objectRec(x: String = ""): all.Parser[(String, Yaml)] =
+    P {
+      for {
+        a <- keys ~ space ~ nested.?
+        (s, o) = a
+        b <- o match {
+          case None =>
+            println(s"xxxxxxxx NO new line $s")
+            primitives
+          case Some(n) =>
+            println(s"xxxxxxxx New line $s")
+            root(n + x)
+        }
+      } yield (s, b)
+    }.log()
 
-  def objectRec(x: String = ""): all.Parser[(String, Yaml)] = P {
-    for {
-      a <- keys ~ space ~ nested.?
-      (s, o) = a
-      b <- o match {
-        case None =>
-          println(s"xxxxxxxx NO new line $s")
-          primitives
-        case Some(n) =>
-          println(s"xxxxxxxx New line $s")
-          rootKeys(n + x)
-      }
-    } yield (s, b)
-  }
-
-  def rootKeys(s: String = ""): core.Parser[YMap, Char, String] =
-    P(arrayKeys(s).rep(sep = ("\n" + s).~/)).map(x => YMap(ListMap(x: _*))).log()
-
-  def arrayKeys(s: String = "") = P {
-    for {
-      a <- &("- ").!.?
-      b <- a match {
-        case None =>
-          println(s"xxxxxxxx NO ARRAY")
-          objectRec()
-        case Some(_) =>
-          println(s"xxxxxxxx ARRAY $a")
-          objectRec()
-          //("- " ~/ rootKeys("  ")).rep(sep = ("\n" + s).~/).map(x => YArray(x.toVector))
-
-      }
-    } yield b
-  }
-
-  val nObj = P(((nested | PassWith("")) ~ !("-" ~ " ".rep)).flatMap(s => keyValue.rep(sep = ("\n" + s).~/)))
-    .map(x => YMap(ListMap(x: _*)))
-    .log()
 
   val end = P(CharsWhileIn(" \r\n").rep.? ~ End)
-
-  val primitives = P(True | ints | strings).log()
-
-  val expr: all.Parser[Yaml] =
-    P((nObj | nArray | True | ints | strings) ~ end.?).log()
 
 }
