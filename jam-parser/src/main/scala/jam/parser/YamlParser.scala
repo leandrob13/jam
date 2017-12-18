@@ -29,15 +29,19 @@ class YamlParser {
 
   val longs = digits.!.map(x => Yaml.YLong(x.toLong))
 
+  val bigInts = digits.!.map(x => Yaml.YBigInt(BigInt(x)))
+
   val floats = decimals.!.map(x => Yaml.YFloat(x.toFloat))
 
   val doubles = decimals.!.map(x => Yaml.YDouble(x.toDouble))
+
+  val bigDecimals = decimals.!.map(x => Yaml.YBigDecimal(BigDecimal(x)))
 
   val True = P("True" | "true").!.map(_ => Yaml.YTrue).log()
 
   val False = P("False" | "false").!.map(_ => Yaml.YFalse)
 
-  val primitives = P(True | False | doubles | floats | longs | ints | strings).log()
+  val primitives = P(True | False | bigDecimals | doubles | floats | bigInts | longs | ints | strings).log()
 
   val space = P(CharsWhileIn(" \r").?)
 
@@ -52,10 +56,10 @@ class YamlParser {
         b <- a match {
           case None =>
             println(s"xxxxxxxx NO ARRAY")
-            objectRec().rep(sep = ("\n" + s).~/).map(x => YMap(ListMap(x: _*)))
+            objectRec.rep(sep = (("\n" + s) ~ !end).~/).map(x => YMap(ListMap(x: _*)))
           case Some(_) =>
             println(s"xxxxxxxx ARRAY ${s.length}")
-            ("- " ~/ collectionRec(s)).rep(sep = ("\n" + s).~/).map(x => YArray(x.toVector))
+            ("- " ~/ collectionRec(s + "  ")).rep(sep = (("\n" + s) ~ !end).~/).map(x => YArray(x.toVector))
         }
       } yield b
     }.log()
@@ -70,12 +74,12 @@ class YamlParser {
             primitives
           case Some(k) =>
             println(s"xxxxxxxx With KEY $k")
-            objectRec().rep(sep = (("\n" + s) ~ !"- ").~/).map(x => YMap(ListMap(x: _*)))
+            objectRec.rep(sep = (("\n" + s) ~ !"- ").~/).map(x => YMap(ListMap(x: _*)))
         }
       } yield b
     }.log()
 
-  def objectRec(x: String = ""): all.Parser[(String, Yaml)] =
+  val objectRec: all.Parser[(String, Yaml)] =
     P {
       for {
         a <- keys ~ space ~ nested.?
@@ -86,11 +90,15 @@ class YamlParser {
             primitives
           case Some(n) =>
             println(s"xxxxxxxx New line $s")
-            root(n + x)
+            root(n)
         }
       } yield (s, b)
     }.log()
 
+  val start = P(Start ~ CharsWhileIn(" \r\n").rep.?)
+
   val end = P(CharsWhileIn(" \r\n").rep.? ~ End)
+
+  val yaml = start ~ root()
 
 }
