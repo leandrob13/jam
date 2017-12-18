@@ -16,9 +16,13 @@ object Yaml {
 
   private[jam] final case class YLong(v: Long) extends Yaml
 
+  private[jam] final case class YBigInt(v: BigInt) extends Yaml
+
   private[jam] final case class YFloat(v: Float) extends Yaml
 
   private[jam] final case class YDouble(v: Double) extends Yaml
+
+  private[jam] final case class YBigDecimal(v: BigDecimal) extends Yaml
 
   private[jam] final case class YString(v: String) extends Yaml
 
