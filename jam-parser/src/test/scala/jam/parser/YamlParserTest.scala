@@ -9,7 +9,7 @@ import scala.io.Source
 
 class YamlParserTest extends WordSpec with MustMatchers with Inside with Generators {
 
-  val parser = new YamlParser
+  val parser = YamlParser
 
   "YamlParser" should {
 
@@ -201,6 +201,13 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
             )
           )
       }
+    }
+
+    "generate yaml" in {
+      val sb    = new StringBuilder()
+      val yaml  = YMap(ListMap("name" -> YString("kevin"), "married" -> YTrue))
+      val value = YamlPrinter.printYaml(yaml, sb, 0).mkString
+      println(s"==========YAML $value")
     }
   }
 

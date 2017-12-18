@@ -2,11 +2,11 @@ package jam.parser
 
 import fastparse.all
 import jam.Yaml
-import jam.Yaml.{ YArray, YMap }
+import jam.Yaml._
 
 import scala.collection.immutable.ListMap
 
-class YamlParser {
+object YamlParser {
   import all._
 
   val stringChars: Char => Boolean = !(":\n\"\\").contains(_: Char)
