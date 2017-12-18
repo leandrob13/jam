@@ -10,6 +10,6 @@ lazy val `jam-parser` = project
     )
   )
 
-lazy val root = (project in file(".")).aggregate(`jam-parser`)
+lazy val jam = (project in file(".")).aggregate(`jam-parser`)
 
 scalafmtOnCompile in ThisBuild := true

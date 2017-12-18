@@ -8,7 +8,8 @@ object Common {
     scalaVersion := "2.12.4",
     fork := true,
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.0.3" % Test
+      "org.scalatest" %% "scalatest" % "3.0.3" % Test,
+      "org.scalacheck" %% "scalacheck" % "1.13.4" % Test
     ),
     scalacOptions ++= Seq(
       "-deprecation",
