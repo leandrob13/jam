@@ -123,12 +123,12 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
     "parse a simple object" in {
       val value = getYaml("/simple.yaml")
 
-      inside(parser.root().parse(value)) {
+      inside(parser.yaml.parse(value)) {
         case Parsed.Success(v, _) =>
           v mustBe YMap(
             ListMap(
               "name"    -> YString("Ralph"),
-              "age"     -> YLong(33),
+              "age"     -> YBigInt(33),
               "married" -> YTrue
             )
           )
@@ -138,7 +138,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
     "parse a nested object" in {
       val value = getYaml("/nestedObject.yaml")
 
-      inside(parser.root().parse(value)) {
+      inside(parser.yaml.parse(value)) {
         case Parsed.Success(v, _) =>
           v mustBe YMap(
             ListMap(
@@ -154,7 +154,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
                   )
                 )
               ),
-              "test" -> YLong(0)
+              "test" -> YBigInt(0)
             )
           )
       }
@@ -163,22 +163,39 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
     "parse a nested array object" in {
       val value = getYaml("/nestedArrays.yaml")
 
-      println(s"==========OBJ1 ${parser.root().parse(value)}")
-      inside(parser.root().parse(value)) {
+      println(s"==========OBJ1 ${parser.yaml.parse(value)}")
+      inside(parser.yaml.parse(value)) {
         case Parsed.Success(v, _) =>
           v mustBe YMap(
             ListMap(
               "numbers" -> YArray(
-                Vector(YLong(1), YLong(2), YLong(3))
+                Vector(YBigInt(-1), YBigInt(2), YBigInt(3))
               ),
               "details" -> YArray(
                 Vector(
                   YMap(
-                    ListMap("count" -> YLong(1))
+                    ListMap(
+                      "count"     -> YBigInt(-1),
+                      "something" -> YTrue,
+                      "array" -> YArray(
+                        Vector(
+                          YMap(
+                            ListMap(
+                              "count" -> YBigInt(1),
+                              "name"  -> YString("james"),
+                              "object" -> YMap(
+                                ListMap(
+                                  "kind"   -> YString("nothing to see"),
+                                  "double" -> YBigDecimal(-0.001)
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
                   ),
-                  YMap(
-                    ListMap("count" -> YLong(2))
-                  )
+                  YMap(ListMap("count" -> YBigInt(2)))
                 )
               )
             )

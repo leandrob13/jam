@@ -1,7 +1,16 @@
+
 numbers:
-  - 1
+  - -1
   - 2
   - 3
 details:
-  - count: 1
+  - count: -1
+    something: true
+    array:
+      - count: 1
+        name: "james"
+        object:
+          kind: nothing to see
+          double: -0.001
   - count: 2
+
