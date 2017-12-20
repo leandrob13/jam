@@ -163,7 +163,6 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
     "parse a nested array object" in {
       val value = getYaml("/nestedArrays.yaml")
 
-      println(s"==========OBJ1 ${parser.yaml.parse(value)}")
       inside(parser.yaml.parse(value)) {
         case Parsed.Success(v, _) =>
           v mustBe YMap(
@@ -204,10 +203,64 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
     }
 
     "generate yaml" in {
-      val sb    = new StringBuilder()
-      val yaml  = YMap(ListMap("name" -> YString("kevin"), "married" -> YTrue))
-      val value = YamlPrinter.printYaml(yaml, sb, 0).mkString
-      println(s"==========YAML $value")
+      val sb = new StringBuilder()
+      val yaml = YMap(
+        ListMap(
+          "info" -> YMap(
+            ListMap(
+              "address"   -> YString("none"),
+              "telephone" -> YString("12345"),
+              "info" -> YMap(
+                ListMap(
+                  "address"   -> YString("none"),
+                  "telephone" -> YString("12345")
+                )
+              )
+            )
+          ),
+          "test" -> YBigInt(0)
+        )
+      )
+      val value = YamlPrinter.printYaml(yaml, sb).toString()
+      value mustBe getYaml("/nestedObject.yaml")
+
+      val yaml2 = YMap(
+        ListMap(
+          "numbers" -> YArray(
+            Vector(YBigInt(-1), YBigInt(2), YBigInt(3))
+          ),
+          "details" -> YArray(
+            Vector(
+              YMap(
+                ListMap(
+                  "count"     -> YBigInt(-1),
+                  "something" -> YTrue,
+                  "array" -> YArray(
+                    Vector(
+                      YMap(
+                        ListMap(
+                          "count" -> YBigInt(1),
+                          "name"  -> YString("james"),
+                          "object" -> YMap(
+                            ListMap(
+                              "kind"   -> YString("nothing to see"),
+                              "double" -> YBigDecimal(-0.001)
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+              YMap(ListMap("count" -> YBigInt(2)))
+            )
+          )
+        )
+      )
+      val sb2    = new StringBuilder()
+      val value2 = YamlPrinter.printYaml(yaml2, sb2).toString()
+      value2 mustBe getYaml("/nestedArrays.yaml")
     }
   }
 
