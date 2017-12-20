@@ -55,10 +55,8 @@ object YamlParser {
         a <- &("- ").!.?
         b <- a match {
           case None =>
-            println(s"xxxxxxxx NO ARRAY")
             objectRec.rep(sep = (("\n" + s) ~ !end).~/).map(x => YMap(ListMap(x: _*)))
           case Some(_) =>
-            println(s"xxxxxxxx ARRAY ${s.length}")
             ("- " ~/ collectionRec(s + "  ")).rep(sep = (("\n" + s) ~ !end).~/).map(x => YArray(x.toVector))
         }
       } yield b
@@ -70,10 +68,8 @@ object YamlParser {
         a <- &(keys).!.?
         b <- a match {
           case None =>
-            println(s"xxxxxxxx NO KEY")
             primitives
           case Some(k) =>
-            println(s"xxxxxxxx With KEY $k")
             objectRec.rep(sep = (("\n" + s) ~ !"- ").~/).map(x => YMap(ListMap(x: _*)))
         }
       } yield b
@@ -85,12 +81,8 @@ object YamlParser {
         a <- keys ~ space ~ nested.?
         (s, o) = a
         b <- o match {
-          case None =>
-            println(s"xxxxxxxx NO new line $s")
-            primitives
-          case Some(n) =>
-            println(s"xxxxxxxx New line $s")
-            root(n)
+          case None    => primitives
+          case Some(n) => root(n)
         }
       } yield (s, b)
     }.log()
