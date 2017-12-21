@@ -21,27 +21,17 @@ object YamlParser {
 
   val digits = P(CharIn("+-").? ~ CharsWhileIn("0123456789"))
 
-  val decimals = P(digits ~ "." ~ digits ~ (CharIn("eE") ~ digits).?)
+  val decimals = P(((digits ~ "." ~ digits) | digits) ~ (CharIn("eE") ~ digits).?)
 
-  val strings = P("\"".? ~/ (strChars | escape).rep.! ~ "\"".?).map(x => Yaml.YString(x)).log()
-
-  val ints = digits.!.map(x => Yaml.YInt(x.toInt)).log()
-
-  val longs = digits.!.map(x => Yaml.YLong(x.toLong))
-
-  val bigInts = digits.!.map(x => Yaml.YBigInt(BigInt(x)))
-
-  val floats = decimals.!.map(x => Yaml.YFloat(x.toFloat))
-
-  val doubles = decimals.!.map(x => Yaml.YDouble(x.toDouble))
+  val strings = P("\"".? ~/ (strChars | escape).rep.! ~ "\"".?).map(x => Yaml.YString(x))
 
   val bigDecimals = decimals.!.map(x => Yaml.YBigDecimal(BigDecimal(x)))
 
-  val True = P("True" | "true").!.map(_ => Yaml.YTrue).log()
+  val True = P("True" | "true").!.map(_ => Yaml.YTrue)
 
   val False = P("False" | "false").!.map(_ => Yaml.YFalse)
 
-  val primitives = P(True | False | bigDecimals | doubles | floats | bigInts | longs | ints | strings).log()
+  val primitives = P(True | False | bigDecimals | strings).log()
 
   val space = P(CharsWhileIn(" \r").?)
 

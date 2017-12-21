@@ -43,7 +43,6 @@ object YamlPrinter {
       builder.append(s)
       builder.append("\"")
     case YBigDecimal(b) => builder.append(s"${" " * space}" + b.toString)
-    case YBigInt(b)     => builder.append(s"${" " * space}" + b.toString)
   }
 
   def printYaml(yaml: Yaml, builder: StringBuilder, indent: Int = 0, first: Boolean = true): scala.StringBuilder =

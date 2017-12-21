@@ -21,26 +21,6 @@ object Yaml {
     override def isPrimitive: Boolean = true
   }
 
-  private[jam] final case class YInt(v: Int) extends Yaml {
-    override def isPrimitive: Boolean = true
-  }
-
-  private[jam] final case class YLong(v: Long) extends Yaml {
-    override def isPrimitive: Boolean = true
-  }
-
-  private[jam] final case class YBigInt(v: BigInt) extends Yaml {
-    override def isPrimitive: Boolean = true
-  }
-
-  private[jam] final case class YFloat(v: Float) extends Yaml {
-    override def isPrimitive: Boolean = true
-  }
-
-  private[jam] final case class YDouble(v: Double) extends Yaml {
-    override def isPrimitive: Boolean = true
-  }
-
   private[jam] final case class YBigDecimal(v: BigDecimal) extends Yaml {
     override def isPrimitive: Boolean = true
   }
