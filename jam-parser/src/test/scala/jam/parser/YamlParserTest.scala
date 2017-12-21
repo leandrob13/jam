@@ -21,77 +21,22 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
             v mustBe YString(s)
         }
       }
-
     }
 
-    "parse a positive Int" in {
-      forAll(positiveIntGen) { s: Int =>
-        inside(parser.ints.parse(s.toString)) {
+    "parse a positive BigDecimal" in {
+      forAll(positiveBigDecimalGen) { s: BigDecimal =>
+        inside(parser.bigDecimals.parse(s.toString)) {
           case Parsed.Success(v, _) =>
-            v mustBe YInt(s)
+            v mustBe YBigDecimal(s)
         }
       }
     }
 
-    "parse a negative Int" in {
-      forAll(negativeIntGen) { s: Int =>
-        inside(parser.ints.parse(s.toString)) {
+    "parse a negative BigDecimal" in {
+      forAll(negativeBigDecimalGen) { s: BigDecimal =>
+        inside(parser.bigDecimals.parse(s.toString)) {
           case Parsed.Success(v, _) =>
-            v mustBe YInt(s)
-        }
-      }
-    }
-
-    "parse a positive Long" in {
-      forAll(positiveLongGen) { s: Long =>
-        inside(parser.longs.parse(s.toString)) {
-          case Parsed.Success(v, _) =>
-            v mustBe YLong(s)
-        }
-      }
-    }
-
-    "parse a negative Long" in {
-      forAll(negativeLongGen) { s: Long =>
-        inside(parser.longs.parse(s.toString)) {
-          case Parsed.Success(v, _) =>
-            v mustBe YLong(s)
-        }
-      }
-    }
-
-    "parse a positive Float" in {
-      forAll(positiveFloatGen) { s: Float =>
-        inside(parser.floats.parse(s.toString)) {
-          case Parsed.Success(v, _) =>
-            v mustBe YFloat(s)
-        }
-      }
-    }
-
-    "parse a negative Float" in {
-      forAll(negativeFloatGen) { s: Float =>
-        inside(parser.floats.parse(s.toString)) {
-          case Parsed.Success(v, _) =>
-            v mustBe YFloat(s)
-        }
-      }
-    }
-
-    "parse a positive Double" in {
-      forAll(positiveDoubleGen) { s: Double =>
-        inside(parser.doubles.parse(s.toString)) {
-          case Parsed.Success(v, _) =>
-            v mustBe YDouble(s)
-        }
-      }
-    }
-
-    "parse a negative Double" in {
-      forAll(negativeDoubleGen) { s: Double =>
-        inside(parser.doubles.parse(s.toString)) {
-          case Parsed.Success(v, _) =>
-            v mustBe YDouble(s)
+            v mustBe YBigDecimal(s)
         }
       }
     }
@@ -128,7 +73,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
           v mustBe YMap(
             ListMap(
               "name"    -> YString("Ralph"),
-              "age"     -> YBigInt(33),
+              "age"     -> YBigDecimal(33),
               "married" -> YTrue
             )
           )
@@ -154,7 +99,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
                   )
                 )
               ),
-              "test" -> YBigInt(0)
+              "test" -> YBigDecimal(0)
             )
           )
       }
@@ -168,19 +113,19 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
           v mustBe YMap(
             ListMap(
               "numbers" -> YArray(
-                Vector(YBigInt(-1), YBigInt(2), YBigInt(3))
+                Vector(YBigDecimal(-1), YBigDecimal(2), YBigDecimal(3))
               ),
               "details" -> YArray(
                 Vector(
                   YMap(
                     ListMap(
-                      "count"     -> YBigInt(-1),
+                      "count"     -> YBigDecimal(-1),
                       "something" -> YTrue,
                       "array" -> YArray(
                         Vector(
                           YMap(
                             ListMap(
-                              "count" -> YBigInt(1),
+                              "count" -> YBigDecimal(1),
                               "name"  -> YString("james"),
                               "object" -> YMap(
                                 ListMap(
@@ -194,7 +139,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
                       )
                     )
                   ),
-                  YMap(ListMap("count" -> YBigInt(2)))
+                  YMap(ListMap("count" -> YBigDecimal(2)))
                 )
               )
             )
@@ -218,7 +163,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
               )
             )
           ),
-          "test" -> YBigInt(0)
+          "test" -> YBigDecimal(0)
         )
       )
       val value = YamlPrinter.printYaml(yaml, sb).toString()
@@ -227,19 +172,19 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
       val yaml2 = YMap(
         ListMap(
           "numbers" -> YArray(
-            Vector(YBigInt(-1), YBigInt(2), YBigInt(3))
+            Vector(YBigDecimal(-1), YBigDecimal(2), YBigDecimal(3))
           ),
           "details" -> YArray(
             Vector(
               YMap(
                 ListMap(
-                  "count"     -> YBigInt(-1),
+                  "count"     -> YBigDecimal(-1),
                   "something" -> YTrue,
                   "array" -> YArray(
                     Vector(
                       YMap(
                         ListMap(
-                          "count" -> YBigInt(1),
+                          "count" -> YBigDecimal(1),
                           "name"  -> YString("james"),
                           "object" -> YMap(
                             ListMap(
@@ -253,7 +198,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
                   )
                 )
               ),
-              YMap(ListMap("count" -> YBigInt(2)))
+              YMap(ListMap("count" -> YBigDecimal(2)))
             )
           )
         )

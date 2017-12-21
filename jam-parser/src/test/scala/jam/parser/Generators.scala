@@ -12,6 +12,10 @@ trait Generators extends GeneratorDrivenPropertyChecks {
 
   val arbitraryFloat = Arbitrary.arbFloat
 
+  val arbitraryBigInt = Arbitrary.arbBigInt
+
+  val arbitraryBigDecimal = Arbitrary.arbBigDecimal
+
   val stringGen =
     listOf(Gen.frequency((5, Gen.alphaNumStr), (3, " "))).map(_.mkString)
 
@@ -30,5 +34,13 @@ trait Generators extends GeneratorDrivenPropertyChecks {
   val positiveDoubleGen = arbitraryDouble.arbitrary.filter(_ >= 0D)
 
   val negativeDoubleGen = arbitraryDouble.arbitrary.filter(_ < 0D)
+
+  val positiveBigDecimalGen = arbitraryBigDecimal.arbitrary.filter(_ >= 0)
+
+  val negativeBigDecimalGen = arbitraryBigDecimal.arbitrary.filter(_ < 0)
+
+  val positiveBigIntGen = arbitraryBigInt.arbitrary.filter(_ >= 0)
+
+  val negativeBigIntGen = arbitraryBigInt.arbitrary.filter(_ < 0)
 
 }
