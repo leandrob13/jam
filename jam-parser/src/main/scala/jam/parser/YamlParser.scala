@@ -39,6 +39,8 @@ object YamlParser {
 
   val nested = P("\n" ~ " ".rep.!).log()
 
+  val emptyArray = "[]".!.map(_ => YArray(Vector.empty))
+
   def root(s: String = ""): all.Parser[Yaml] =
     P {
       for {
@@ -59,7 +61,7 @@ object YamlParser {
         b <- a match {
           case None =>
             primitives
-          case Some(k) =>
+          case Some(_) =>
             objectRec.rep(sep = (("\n" + s) ~ !"- ").~/).map(x => YMap(ListMap(x: _*)))
         }
       } yield b
@@ -71,8 +73,10 @@ object YamlParser {
         a <- keys ~ space ~ nested.?
         (s, o) = a
         b <- o match {
-          case None    => primitives
-          case Some(n) => root(n)
+          case None =>
+            emptyArray | primitives
+          case Some(n) =>
+            root(n)
         }
       } yield (s, b)
     }.log()

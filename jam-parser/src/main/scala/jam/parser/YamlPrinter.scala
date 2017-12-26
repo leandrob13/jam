@@ -21,17 +21,22 @@ object YamlPrinter {
     }
   }
 
-  def printYArray(yArray: YArray, builder: StringBuilder, indent: Int): scala.StringBuilder = {
-    yArray.v.foldLeft(builder) {
-      case (b, yaml) =>
-        b.append("\n")
-        b.append(s"${"  " * indent}- ")
-        yaml match {
-          case m @ YMap(_)        => printYMap(m, builder, indent + 1)
-          case y if y.isPrimitive => printPrimitives(b, 0)(y)
+  def printYArray(yArray: YArray, builder: StringBuilder, indent: Int): scala.StringBuilder =
+    yArray.v match {
+      case vec @ (a +: as) =>
+        vec.foldLeft(builder) {
+          case (b, yaml) =>
+            b.append("\n")
+            b.append(s"${"  " * indent}- ")
+            yaml match {
+              case m @ YMap(_)        => printYMap(m, builder, indent + 1)
+              case y if y.isPrimitive => printPrimitives(b, 0)(y)
+            }
         }
+      case _ =>
+        builder.append(" []")
+
     }
-  }
 
   def printPrimitives(builder: StringBuilder, space: Int = 0): PartialFunction[Yaml, StringBuilder] = {
     case YNull  => builder.append(s"${" " * space}null")
