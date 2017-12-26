@@ -2,11 +2,11 @@ package jam.parser
 
 import fastparse.all
 import jam.Yaml
-import jam.Yaml.{ YArray, YMap }
+import jam.Yaml._
 
 import scala.collection.immutable.ListMap
 
-class YamlParser {
+object YamlParser {
   import all._
 
   val stringChars: Char => Boolean = !(":\n\"\\").contains(_: Char)
@@ -21,27 +21,17 @@ class YamlParser {
 
   val digits = P(CharIn("+-").? ~ CharsWhileIn("0123456789"))
 
-  val decimals = P(digits ~ "." ~ digits ~ (CharIn("eE") ~ digits).?)
+  val decimals = P(((digits ~ "." ~ digits) | digits) ~ (CharIn("eE") ~ digits).?)
 
-  val strings = P("\"".? ~/ (strChars | escape).rep.! ~ "\"".?).map(x => Yaml.YString(x)).log()
-
-  val ints = digits.!.map(x => Yaml.YInt(x.toInt)).log()
-
-  val longs = digits.!.map(x => Yaml.YLong(x.toLong))
-
-  val bigInts = digits.!.map(x => Yaml.YBigInt(BigInt(x)))
-
-  val floats = decimals.!.map(x => Yaml.YFloat(x.toFloat))
-
-  val doubles = decimals.!.map(x => Yaml.YDouble(x.toDouble))
+  val strings = P("\"".? ~/ (strChars | escape).rep.! ~ "\"".?).map(x => Yaml.YString(x))
 
   val bigDecimals = decimals.!.map(x => Yaml.YBigDecimal(BigDecimal(x)))
 
-  val True = P("True" | "true").!.map(_ => Yaml.YTrue).log()
+  val True = P("True" | "true").!.map(_ => Yaml.YTrue)
 
   val False = P("False" | "false").!.map(_ => Yaml.YFalse)
 
-  val primitives = P(True | False | bigDecimals | doubles | floats | bigInts | longs | ints | strings).log()
+  val primitives = P(True | False | bigDecimals | strings).log()
 
   val space = P(CharsWhileIn(" \r").?)
 
@@ -49,16 +39,16 @@ class YamlParser {
 
   val nested = P("\n" ~ " ".rep.!).log()
 
+  val emptyArray = "[]".!.map(_ => YArray(Vector.empty))
+
   def root(s: String = ""): all.Parser[Yaml] =
     P {
       for {
         a <- &("- ").!.?
         b <- a match {
           case None =>
-            println(s"xxxxxxxx NO ARRAY")
             objectRec.rep(sep = (("\n" + s) ~ !end).~/).map(x => YMap(ListMap(x: _*)))
           case Some(_) =>
-            println(s"xxxxxxxx ARRAY ${s.length}")
             ("- " ~/ collectionRec(s + "  ")).rep(sep = (("\n" + s) ~ !end).~/).map(x => YArray(x.toVector))
         }
       } yield b
@@ -70,10 +60,8 @@ class YamlParser {
         a <- &(keys).!.?
         b <- a match {
           case None =>
-            println(s"xxxxxxxx NO KEY")
             primitives
-          case Some(k) =>
-            println(s"xxxxxxxx With KEY $k")
+          case Some(_) =>
             objectRec.rep(sep = (("\n" + s) ~ !"- ").~/).map(x => YMap(ListMap(x: _*)))
         }
       } yield b
@@ -86,10 +74,8 @@ class YamlParser {
         (s, o) = a
         b <- o match {
           case None =>
-            println(s"xxxxxxxx NO new line $s")
-            primitives
+            emptyArray | primitives
           case Some(n) =>
-            println(s"xxxxxxxx New line $s")
             root(n)
         }
       } yield (s, b)

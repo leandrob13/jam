@@ -1,8 +1,8 @@
-
 numbers:
   - -1
   - 2
   - 3
+empty: []
 details:
   - count: -1
     something: true
@@ -10,7 +10,6 @@ details:
       - count: 1
         name: "james"
         object:
-          kind: nothing to see
+          kind: "nothing to see"
           double: -0.001
   - count: 2
-
