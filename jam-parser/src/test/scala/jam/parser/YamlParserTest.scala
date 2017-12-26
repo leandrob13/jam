@@ -115,6 +115,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
               "numbers" -> YArray(
                 Vector(YBigDecimal(-1), YBigDecimal(2), YBigDecimal(3))
               ),
+              "empty" -> YArray(Vector()),
               "details" -> YArray(
                 Vector(
                   YMap(
@@ -174,6 +175,7 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
           "numbers" -> YArray(
             Vector(YBigDecimal(-1), YBigDecimal(2), YBigDecimal(3))
           ),
+          "empty" -> YArray(Vector()),
           "details" -> YArray(
             Vector(
               YMap(
