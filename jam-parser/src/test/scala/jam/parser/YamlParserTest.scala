@@ -12,7 +12,6 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
   "YamlParser" should {
 
     "parse a string" in {
-
       forAll(stringGen) { s: String =>
         inside(parse(s, YamlParser.strings(_))) {
           case Parsed.Success(v, _) =>
@@ -37,6 +36,25 @@ class YamlParserTest extends WordSpec with MustMatchers with Inside with Generat
             v mustBe YBigDecimal(s)
         }
       }
+    }
+
+    "parse a valid unicode sequence" in {
+      parse("uabcd", YamlParser.unicodeEscape(_)) mustBe a[Parsed.Success[_]]
+      parse("uABC4", YamlParser.unicodeEscape(_)) mustBe a[Parsed.Success[_]]
+      parse("uA9bF", YamlParser.unicodeEscape(_)) mustBe a[Parsed.Success[_]]
+      parse("u1234", YamlParser.unicodeEscape(_)) mustBe a[Parsed.Success[_]]
+    }
+
+    "fail parsing an invalid character range in an unicode sequence" in {
+      parse("ufgej", YamlParser.unicodeEscape(_)) mustBe a[Parsed.Failure]
+    }
+
+    "fail parsing an invalid unicode sequence (length)" in {
+      parse("uaaaab", YamlParser.unicodeEscape(_)) mustBe a[Parsed.Failure]
+    }
+
+    "fail parsing an invalid unicode sequence (invalid prefix)" in {
+      parse("zaaaab", YamlParser.unicodeEscape(_)) mustBe a[Parsed.Failure]
     }
 
     "parse a true" in {

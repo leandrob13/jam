@@ -13,7 +13,7 @@ object YamlParser {
 
   def hexDigit[_: P]: P[Unit] = P(CharIn("0-9", "a-f", "A-F"))
 
-  def unicodeEscape[_: P]: P[Unit] = P("u" ~ hexDigit ~ hexDigit ~ hexDigit ~ hexDigit)
+  def unicodeEscape[_: P]: P[Unit] = P("u" ~ hexDigit.rep(exactly = 4) ~ End)
 
   def escape[_: P]: P[Unit] = P("\\" ~ (CharIn("\"/\\bfnrt") | unicodeEscape))
 
@@ -81,10 +81,10 @@ object YamlParser {
       } yield (s, b)
     }
 
-  def start[_: P] = P(Start ~ CharsWhileIn(" \r\n").rep.?)
+  def start[_: P]: P[Unit] = P(Start ~ CharsWhileIn(" \r\n").rep.?)
 
-  def end[_: P] = P(CharsWhileIn(" \r\n").rep.? ~ End)
+  def end[_: P]: P[Unit] = P(CharsWhileIn(" \r\n").rep.? ~ End)
 
-  def yaml[_: P] = start ~ root()
+  def yaml[_: P]: P[Yaml] = start ~ root()
 
 }
