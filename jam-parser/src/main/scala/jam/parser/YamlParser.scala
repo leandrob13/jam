@@ -1,60 +1,60 @@
 package jam.parser
 
-import fastparse.all
+import fastparse._
+import NoWhitespace._
 import jam.Yaml
 import jam.Yaml._
 
 import scala.collection.immutable.ListMap
 
 object YamlParser {
-  import all._
 
-  val stringChars: Char => Boolean = !(":\n\"\\").contains(_: Char)
+  val stringChars: Char => Boolean = !":\n\"\\".contains(_: Char)
 
-  val hexDigit = P(CharIn('0' to '9', 'a' to 'f', 'A' to 'F'))
+  def hexDigit[_: P]: P[Unit] = P(CharIn("0-9", "a-f", "A-F"))
 
-  val unicodeEscape = P("u" ~ hexDigit ~ hexDigit ~ hexDigit ~ hexDigit)
+  def unicodeEscape[_: P]: P[Unit] = P("u" ~ hexDigit ~ hexDigit ~ hexDigit ~ hexDigit)
 
-  val escape = P("\\" ~ (CharIn("\"/\\bfnrt") | unicodeEscape))
+  def escape[_: P]: P[Unit] = P("\\" ~ (CharIn("\"/\\bfnrt") | unicodeEscape))
 
-  val strChars = P(CharsWhile(stringChars))
+  def strChars[_: P]: P[Unit] = P(CharsWhile(stringChars))
 
-  val digits = P(CharIn("+-").? ~ CharsWhileIn("0123456789"))
+  def digits[_: P]: P[Unit] = P(CharIn("\\+", "\\-").? ~ CharsWhileIn("0123456789"))
 
-  val decimals = P(((digits ~ "." ~ digits) | digits) ~ (CharIn("eE") ~ digits).?)
+  def decimals[_: P]: P[Unit] = P(((digits ~ "." ~ digits) | digits) ~ (CharIn("eE") ~ digits).?)
 
-  val strings = P("\"".? ~/ (strChars | escape).rep.! ~ "\"".?).map(x => Yaml.YString(x))
+  def strings[_: P]: P[YString] = P("\"".? ~/ (strChars | escape).rep.! ~ "\"".?).map(x => Yaml.YString(x))
 
-  val bigDecimals = decimals.!.map(x => Yaml.YBigDecimal(BigDecimal(x)))
+  def bigDecimals[_: P]: P[YBigDecimal] = decimals.!.map(x => Yaml.YBigDecimal(BigDecimal(x)))
 
-  val True = P("True" | "true").!.map(_ => Yaml.YTrue)
+  def True[_: P]: P[Yaml.YTrue.type] = P("True" | "true").!.map(_ => Yaml.YTrue)
 
-  val False = P("False" | "false").!.map(_ => Yaml.YFalse)
+  def False[_: P]: P[Yaml.YFalse.type] = P("False" | "false").!.map(_ => Yaml.YFalse)
 
-  val primitives = P(True | False | bigDecimals | strings).log()
+  def primitives[_: P]: P[Yaml] = P(True | False | bigDecimals | strings)
 
-  val space = P(CharsWhileIn(" \r").?)
+  def space[_: P]: P[Unit] = P(CharsWhileIn(" \r").?)
 
-  val keys = P((strChars | escape).rep.! ~/ ":").log()
+  def keys[_: P]: P[String] = P((strChars | escape).rep.! ~/ ":")
 
-  val nested = P("\n" ~ " ".rep.!).log()
+  def nested[_: P]: P[String] = P("\n" ~ " ".rep.!)
 
-  val emptyArray = "[]".!.map(_ => YArray(Vector.empty))
+  def emptyArray[_: P]: P[YArray] = "[]".!.map(_ => YArray(Vector.empty))
 
-  def root(s: String = ""): all.Parser[Yaml] =
+  def root[_: P](s: String = ""): P[Yaml] =
     P {
       for {
         a <- &("- ").!.?
         b <- a match {
           case None =>
-            objectRec.rep(sep = (("\n" + s) ~ !end).~/).map(x => YMap(ListMap(x: _*)))
+            objectRec.rep(sep = ("\n" + s) ~ !end).map(x => YMap(ListMap(x: _*)))
           case Some(_) =>
-            ("- " ~/ collectionRec(s + "  ")).rep(sep = (("\n" + s) ~ !end).~/).map(x => YArray(x.toVector))
+            ("- " ~/ collectionRec(s + "  ")).rep(sep = ("\n" + s) ~ !end).map(x => YArray(x.toVector))
         }
       } yield b
-    }.log()
+    }
 
-  def collectionRec(s: String = ""): all.Parser[Yaml] =
+  def collectionRec[_: P](s: String = ""): P[Yaml] =
     P {
       for {
         a <- &(keys).!.?
@@ -62,12 +62,12 @@ object YamlParser {
           case None =>
             primitives
           case Some(_) =>
-            objectRec.rep(sep = (("\n" + s) ~ !"- ").~/).map(x => YMap(ListMap(x: _*)))
+            objectRec.rep(sep = ("\n" + s) ~ !"- ").map(x => YMap(ListMap(x: _*)))
         }
       } yield b
-    }.log()
+    }
 
-  val objectRec: all.Parser[(String, Yaml)] =
+  def objectRec[_: P]: P[(String, Yaml)] =
     P {
       for {
         a <- keys ~ space ~ nested.?
@@ -79,12 +79,12 @@ object YamlParser {
             root(n)
         }
       } yield (s, b)
-    }.log()
+    }
 
-  val start = P(Start ~ CharsWhileIn(" \r\n").rep.?)
+  def start[_: P] = P(Start ~ CharsWhileIn(" \r\n").rep.?)
 
-  val end = P(CharsWhileIn(" \r\n").rep.? ~ End)
+  def end[_: P] = P(CharsWhileIn(" \r\n").rep.? ~ End)
 
-  val yaml = start ~ root()
+  def yaml[_: P] = start ~ root()
 
 }
