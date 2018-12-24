@@ -19,7 +19,7 @@ object YamlParser {
 
   def strChars[_: P]: P[Unit] = P(CharsWhile(stringChars))
 
-  def digits[_: P]: P[Unit] = P(CharIn("\\+", "\\-").? ~ CharsWhileIn("0123456789"))
+  def digits[_: P]: P[Unit] = P(CharIn("+\\-").? ~ CharsWhileIn("0123456789"))
 
   def decimals[_: P]: P[Unit] = P(((digits ~ "." ~ digits) | digits) ~ (CharIn("eE") ~ digits).?)
 
