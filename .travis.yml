@@ -1,0 +1,22 @@
+language: scala
+
+matrix:
+  include:
+    - jdk: oraclejdk8
+      scala: 2.12.7
+
+script:
+  - sbt -J-Xmx2048m build
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.coursier/cache
+    - $HOME/.sbt
+
+before_cache:
+  - find $HOME/.sbt -name "*.lock" -type f -delete
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -type f -delete

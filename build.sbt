@@ -13,3 +13,5 @@ lazy val `jam-parser` = project
 lazy val jam = (project in file(".")).aggregate(`jam-parser`)
 
 scalafmtOnCompile in ThisBuild := true
+
+addCommandAlias("build", ";clean;coverage;test;coverageAggregate;coverageReport")
