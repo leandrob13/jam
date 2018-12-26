@@ -1,11 +1,11 @@
-package jam.parser
+package jam.printer
 
 import jam.Yaml
 
 object YamlPrinter {
   import Yaml._
 
-  def printYMap(
+  private[printer] def printYMap(
       yMap: YMap,
       builder: StringBuilder,
       indent: Int,
@@ -21,9 +21,9 @@ object YamlPrinter {
     }
   }
 
-  def printYArray(yArray: YArray, builder: StringBuilder, indent: Int): scala.StringBuilder =
+  private[printer] def printYArray(yArray: YArray, builder: StringBuilder, indent: Int): scala.StringBuilder =
     yArray.v match {
-      case vec @ (a +: as) =>
+      case vec @ _ +: _ =>
         vec.foldLeft(builder) {
           case (b, yaml) =>
             b.append("\n")
@@ -38,7 +38,7 @@ object YamlPrinter {
 
     }
 
-  def printPrimitives(builder: StringBuilder, space: Int = 0): PartialFunction[Yaml, StringBuilder] = {
+  private[printer] def printPrimitives(builder: StringBuilder, space: Int = 0): PartialFunction[Yaml, StringBuilder] = {
     case YNull  => builder.append(s"${" " * space}null")
     case YFalse => builder.append(s"${" " * space}false")
     case YTrue  => builder.append(s"${" " * space}true")

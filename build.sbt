@@ -6,7 +6,7 @@ lazy val `jam-parser` = project
     name := "jam-parser",
     version := "0.0.1",
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "fastparse" % "1.0.0"
+      "com.lihaoyi" %% "fastparse" % "2.1.0"
     )
   )
 

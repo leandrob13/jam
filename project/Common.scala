@@ -4,13 +4,13 @@ import Keys._
 object Common {
 
   lazy val commonSettings = Seq(
-    organization := "leandrob13",
-    scalaVersion := "2.12.4",
+    organization := "co.s4n",
+    scalaVersion := "2.12.7",
     fork := true,
     fork in test := true,
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.0.3" % Test,
-      "org.scalacheck" %% "scalacheck" % "1.13.4" % Test
+      "org.scalatest"         %% "scalatest"              % "3.0.5"     % Test,
+      "org.scalacheck"        %% "scalacheck"             % "1.14.0"    % Test
     ),
     scalacOptions ++= Seq(
       "-deprecation",
