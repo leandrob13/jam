@@ -9,7 +9,6 @@ class YamlPrinterTest extends WordSpec with MustMatchers {
 
   "YamlPrinter" should {
     "generate yaml" in {
-      val sb = new StringBuilder()
       val yaml = YMap(
         ListMap(
           "info" -> YMap(
@@ -27,7 +26,7 @@ class YamlPrinterTest extends WordSpec with MustMatchers {
           "test" -> YBigDecimal(0)
         )
       )
-      val value = YamlPrinter.printYaml(yaml, sb).toString()
+      val value = yaml.print()
       value mustBe getYaml("/nestedObject.yaml")
 
       val yaml2 = YMap(
@@ -65,8 +64,7 @@ class YamlPrinterTest extends WordSpec with MustMatchers {
           )
         )
       )
-      val sb2    = new StringBuilder()
-      val value2 = YamlPrinter.printYaml(yaml2, sb2).toString()
+      val value2 = yaml2.print()
       value2 mustBe getYaml("/nestedArrays.yaml")
     }
   }
