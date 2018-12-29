@@ -39,7 +39,7 @@ object YamlParser {
 
   def nested[_: P]: P[String] = P("\n" ~ " ".rep.!)
 
-  def emptyArray[_: P]: P[YArray] = "[]".!.map(_ => YArray(Vector.empty))
+  def emptyArray[_: P]: P[YArray] = "[]".!.map(_ => YArray(Seq.empty))
 
   def root[_: P](s: String = ""): P[Yaml] =
     P {
@@ -49,7 +49,7 @@ object YamlParser {
           case None =>
             objectRec.rep(sep = ("\n" + s) ~ !end).map(x => YMap(ListMap(x: _*)))
           case Some(_) =>
-            ("- " ~/ collectionRec(s + "  ")).rep(sep = ("\n" + s) ~ !end).map(x => YArray(x.toVector))
+            ("- " ~/ collectionRec(s + "  ")).rep(sep = ("\n" + s) ~ !end).map(x => YArray(x))
         }
       } yield b
     }
