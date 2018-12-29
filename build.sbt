@@ -4,7 +4,6 @@ lazy val `jam-parser` = project
   .settings(
     commonSettings,
     name := "jam-parser",
-    version := "0.0.1",
     libraryDependencies ++= Seq(
       "com.lihaoyi"    %% "fastparse"    % "2.1.0",
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
@@ -12,7 +11,14 @@ lazy val `jam-parser` = project
     )
   )
 
-lazy val jam = (project in file(".")).aggregate(`jam-parser`)
+lazy val `jam-swagger` = project
+  .settings(
+    commonSettings,
+    name := "jam-swagger"
+  )
+  .dependsOn(`jam-parser`)
+
+lazy val jam = (project in file(".")).aggregate(`jam-parser`, `jam-swagger`)
 
 scalafmtOnCompile in ThisBuild := true
 
